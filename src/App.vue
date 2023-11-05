@@ -1,43 +1,37 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import Greet from "./components/Greet.vue";
+import {onMounted, ref} from "vue";
+import {appWindow} from "@tauri-apps/api/window";
+import {open} from "@tauri-apps/api/dialog";
+import {readTextFile} from "@tauri-apps/api/fs";
+
+const content = ref<string>("");
+
+onMounted(() => {
+  appWindow.listen("new-file", () => {
+    content.value = "";
+  });
+  appWindow.listen("open-file", async () =>{
+    try {
+      const filePath = await open({
+        title: "Select any text files",
+        multiple: false,
+      });
+      if(!filePath) return;
+      content.value = await readTextFile(filePath as string, {});
+    } catch (e) {
+      console.error(e)
+    }
+
+  });
+})
+
 </script>
 
 <template>
   <div class="container">
-    <h1>Welcome to Tauri!</h1>
-
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <p>
-      Recommended IDE setup:
-      <a href="https://code.visualstudio.com/" target="_blank">VS Code</a>
-      +
-      <a href="https://github.com/johnsoncodehk/volar" target="_blank">Volar</a>
-      +
-      <a href="https://github.com/tauri-apps/tauri-vscode" target="_blank"
-        >Tauri</a
-      >
-      +
-      <a href="https://github.com/rust-lang/rust-analyzer" target="_blank"
-        >rust-analyzer</a
-      >
-    </p>
-
-    <Greet />
+       <textarea v-model="content" rows="5" class="tauri"/>
   </div>
 </template>
 
