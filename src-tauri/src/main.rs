@@ -21,6 +21,9 @@ fn main() {
                 "open" => {
                     event.window().emit("open-file", "" ).unwrap();
                 }
+                "save" => {
+                    event.window().emit("save-file", "").unwrap();
+                }
                 _ => {}
             }
         })
